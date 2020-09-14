@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import {PongModule} from "./pong/pong.module";
+import {PongModule} from './pong/pong.module';
 
 @NgModule({
   declarations: [
