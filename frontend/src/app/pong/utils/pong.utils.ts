@@ -1,6 +1,7 @@
 import {Player} from '../interfaces/player';
 import {Position} from '../interfaces/position';
 import {Circle} from '../interfaces/circle';
+import {Ball, BallPositions} from '../interfaces/ball';
 
 export function getLeftPlayer(
   canvasHeight: number,
@@ -57,7 +58,7 @@ export function getTopPlayer(
     },
     isWall: false,
     score: 0,
-    position: Position.Top
+    position: Position.TOP
   }
 }
 
@@ -84,11 +85,65 @@ export function getBottomPlayer(
 export function getBall(
   canvasWidth: number,
   canvasHeight: number,
-  radius: number = 10): Circle {
+  radius: number = 10): Ball {
   return {
-    x: canvasWidth/2,
-    y: canvasHeight/2,
-    color: 'white',
-    radius
+    speed: 5,
+    velocityX: 5,
+    velocityY: 5,
+    circle : {
+      x: canvasWidth/2,
+      y: canvasHeight/2,
+      color: 'white',
+      radius
+    }
   };
+}
+
+export function getBallPositions(ball: Ball): BallPositions {
+  const ballTop = ball.circle.y - ball.circle.radius;
+  const ballBottom = ball.circle.y + ball.circle.radius;
+  const ballLeft = ball.circle.x - ball.circle.radius;
+  const ballRight = ball.circle.x + ball.circle.radius;
+
+  return { ballTop, ballBottom,ballLeft, ballRight};
+}
+
+export function didBallHitLeftPlayer(ball: Ball, player: Player, offset): boolean {
+  const playerTop = player.rectangle.y;
+  const playerBottom = player.rectangle.y + player.rectangle.height;
+  const playerLeft = player.rectangle.x + offset;
+  const playerRight = player.rectangle.x + player.rectangle.width + offset;
+
+  const { ballTop, ballBottom,ballLeft, ballRight} = getBallPositions(ball);
+  return playerLeft < ballRight && playerTop < ballBottom && playerRight > ballLeft && playerBottom > ballTop;
+}
+
+export function didBallHitRightPlayer(ball: Ball, player: Player, offset: number): boolean {
+  const playerTop = player.rectangle.y;
+  const playerBottom = player.rectangle.y + player.rectangle.height;
+  const playerLeft = player.rectangle.x - offset;
+  const playerRight = player.rectangle.x + player.rectangle.width - offset;
+
+  const { ballTop, ballBottom,ballLeft, ballRight} = getBallPositions(ball);
+  return playerLeft < ballRight && playerTop < ballBottom && playerRight > ballLeft && playerBottom > ballTop;
+}
+
+export function didBallHitTopPlayer(ball: Ball, player: Player, offset: number): boolean {
+  const playerTop = player.rectangle.y + offset;
+  const playerBottom = player.rectangle.y + player.rectangle.height + offset;
+  const playerLeft = player.rectangle.x;
+  const playerRight = player.rectangle.x + player.rectangle.width;
+
+  const { ballTop, ballBottom,ballLeft, ballRight} = getBallPositions(ball);
+  return playerLeft < ballRight && playerTop < ballBottom && playerRight > ballLeft && playerBottom > ballTop;
+}
+
+export function didBallHitBottomPlayer(ball: Ball, player: Player, offset: number): boolean {
+  const playerTop = player.rectangle.y - offset;
+  const playerBottom = player.rectangle.y + player.rectangle.height - offset;
+  const playerLeft = player.rectangle.x;
+  const playerRight = player.rectangle.x + player.rectangle.width;
+
+  const { ballTop, ballBottom,ballLeft, ballRight} = getBallPositions(ball);
+  return playerLeft < ballRight && playerTop < ballBottom && playerRight > ballLeft && playerBottom > ballTop;
 }

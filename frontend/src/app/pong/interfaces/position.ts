@@ -1,5 +1,5 @@
 export enum Position {
-  Top = 'TOP',
+  TOP = 'TOP',
   BOTTOM = 'BOTTOM',
   LEFT = 'LEFT',
   RIGHT = 'RIGHT',
