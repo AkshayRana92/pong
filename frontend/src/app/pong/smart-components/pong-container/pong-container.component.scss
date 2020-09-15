@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+
+  mat-card {
+    mat-card-header {
+      font-size: 30px;
+    }
+
+    padding: 20px;
+    margin: 20px;
+    height: 100%;
+  }
+
+  .game {
+    flex: 1 0 70%;
+  }
+
+  .messages {
+    flex: 0 1 20%;
+
+    mat-card {
+      margin-left: 0;
+    }
+  }
+}

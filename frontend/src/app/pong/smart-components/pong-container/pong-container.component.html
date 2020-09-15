@@ -1,22 +1,57 @@
-<div *ngIf="isGameStarted; else enterDetails">
+<div class="container">
+  <div class="game">
+    <mat-card>
+      <mat-card-header>
+        Pong Game
+      </mat-card-header>
+      <mat-card-content>
 
-  <ng-container *ngIf="(timer$ | async) > 0; else timerEnded">
-    Waiting for other players. Game will start in {{timer$ | async}}s
-  </ng-container>
+        <div *ngIf="isGameStarted; else enterDetails">
+          <div *ngIf="(timer$ | async) && (timer$ | async) > 0; else timerEnded">
+            Waiting for other players. Game will start in {{timer$ | async}}s
+          </div>
 
-  <ng-template #timerEnded>
-    <ng-container *ngIf="totalPlayers >= 2; else insufficientPlayers">
-      <app-pong-canvas [playerNumber]="playerNumber"></app-pong-canvas>
-    </ng-container>
-    <ng-template #insufficientPlayers>
-      Insufficient Players. Please Try Again.
-      <button (click)="tryAgain()">Try Again</button>
-    </ng-template>
-  </ng-template>
+          <ng-template #timerEnded>
+            <ng-container *ngIf="totalPlayers >= 2 && (timer$ | async) === 0; else insufficientPlayers">
+              <app-pong-canvas
+                [playerNumber]="playerNumber"
+                [totalPlayers]="totalPlayers"
+                [isHost]="isHost"
+                [ballMovement]="ballMovement$ | async"
+                [moveOpponents]="playerMoved$ | async"
+                (playerMove)="onPlayerMove($event)"
+                (ballMove)="onBallMove($event)"
+                (scores)="onSetScore($event)"
+              ></app-pong-canvas>
+            </ng-container>
+            <ng-template #insufficientPlayers>
+              <div *ngIf="(timer$ | async) === 0">
+                Insufficient Players. Please Try Again.
+                <button (click)="tryAgain()">Try Again</button>
+              </div>
+            </ng-template>
+          </ng-template>
+        </div>
+
+        <ng-template #enterDetails>
+          <label>Name: </label>
+          <input type="text" placeholder="Enter Name" [(ngModel)]="name"/>
+          <button (click)="join()">JOIN GAME</button>
+        </ng-template>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="messages">
+    <mat-card>
+      <mat-card-header>
+        Messages
+      </mat-card-header>
+      <mat-card-content>
+        <app-messages [message]="messages$ | async"></app-messages>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
 </div>
-
-<ng-template #enterDetails>
-  <label>Name: </label>
-  <input type="text" placeholder="Enter Name" [(ngModel)]="name"/>
-  <button (click)="join()">JOIN GAME</button>
-</ng-template>

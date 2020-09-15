@@ -1,72 +1,94 @@
-import {Injectable} from '@angular/core';
-import {Position} from '../interfaces/position';
+import { Injectable } from '@angular/core';
+import { Position } from '../interfaces/position';
 import * as io from 'socket.io-client';
-import {environment} from '../../../environments/environment';
-import {Observable, Subject} from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Observable, Subject } from 'rxjs';
+import { PlayerMovement } from '../interfaces/player-movement';
+import { BallMovement } from '../interfaces/ball-movement';
+import { PlayerApiResponse } from '../interfaces/player-api-response';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PongService {
   socket;
-  playerNumber: Subject<number> = new Subject<number>();
-  playerNumber$: Observable<number> = this.playerNumber.asObservable();
 
-  totalPlayers: Subject<number> = new Subject<number>();
-  totalPlayers$: Observable<number> = this.totalPlayers.asObservable();
+  clear: Subject<boolean> = new Subject<boolean>();
+  clear$: Observable<boolean> = this.clear.asObservable();
 
   timer: Subject<number> = new Subject<number>();
   timer$: Observable<number> = this.timer.asObservable();
 
+  winner: Subject<PlayerApiResponse> = new Subject<PlayerApiResponse>();
+  winner$: Observable<PlayerApiResponse> = this.winner.asObservable();
+
   message: Subject<string> = new Subject<string>();
   message$: Observable<string> = this.message.asObservable();
 
-  playerList: Subject<{id: string, name: string, playerNumber: number}[]> = new Subject<{id: string, name: string, playerNumber: number}[]>();
-  playerList$: Observable<{id: string, name: string, playerNumber: number}[]> = this.playerList.asObservable();
+  playerMoved: Subject<PlayerMovement> = new Subject<PlayerMovement>();
+  playerMoved$: Observable<PlayerMovement> = this.playerMoved.asObservable();
+
+  ballMovement: Subject<BallMovement> = new Subject<BallMovement>();
+  ballMovement$: Observable<BallMovement> = this.ballMovement.asObservable();
+
+  playerList: Subject<{ id: string, name: string, playerNumber: number }[]> =
+    new Subject<{ id: string, name: string, playerNumber: number }[]>();
+  playerList$: Observable<{ id: string, name: string, playerNumber: number }[]> = this.playerList.asObservable();
 
   constructor() {}
 
-  setupSocketConnection() {
+  setupSocketConnection(): void {
     this.socket = io(environment.SOCKET_ENDPOINT);
 
-    this.socket.on('playerNumber', (playerNumber: number) => {
-      if (playerNumber) {
-        this.playerNumber.next(playerNumber)
-      }
-    });
-
-    this.socket.on('totalPlayers', (total: number) => {
-      if (total) {
-        this.totalPlayers.next(total)
-      }
-    });
-
-    this.socket.on('playerList', (playerList: {id: string, name: string, playerNumber: number}[]) => {
+    this.socket.on('playerList', (playerList: { id: string, name: string, playerNumber: number }[]) => {
       if (playerList && playerList.length > 0) {
-        this.playerList.next(playerList)
+        this.playerList.next(playerList);
       }
     });
 
     this.socket.on('message', (message: string) => {
-      console.log(message);
       this.message.next(message);
     });
 
     this.socket.on('timer', (timer: number) => {
       this.timer.next(timer);
     });
+
+    this.socket.on('playerMoved', (playerMovement: PlayerMovement) => {
+      this.playerMoved.next(playerMovement);
+    });
+
+    this.socket.on('ballMoved', (ballMovement: BallMovement) => {
+      this.ballMovement.next(ballMovement);
+    });
+
+    this.socket.on('winner', (player: PlayerApiResponse) => {
+      this.winner.next(player);
+    });
+
+    this.socket.on('clear', (clear: boolean) => {
+      this.clear.next(clear);
+    });
   }
 
-  joinGame(name: string) {
-    this.socket.emit('join', name)
+  joinGame(name: string): void {
+    this.socket.emit('join', name);
   }
 
-  reset() {
-    this.socket.emit('reset')
+  reset(): void {
+    this.socket.emit('reset');
   }
 
-  getMyPosition(): Position {
-    return Position.LEFT;
+  onPlayerMove(movement: PlayerMovement): void {
+    this.socket.emit('onPlayerMove', movement);
+  }
+
+  onBallMove(movement: BallMovement): void {
+    this.socket.emit('onBallMove', movement);
+  }
+
+  onSetScore(scores: number[]): void {
+    this.socket.emit('setScore', scores);
   }
 
 }

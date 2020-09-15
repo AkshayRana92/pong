@@ -4,6 +4,7 @@ import {NgModule} from '@angular/core';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {PongModule} from './pong/pong.module';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import {PongModule} from './pong/pong.module';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    PongModule
+    PongModule,
+    NoopAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
