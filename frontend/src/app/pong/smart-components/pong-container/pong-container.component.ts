@@ -1,49 +1,66 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PongService } from '../../services/pong.service';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { PlayerMovement } from '../../interfaces/player-movement';
 import { BallMovement } from '../../interfaces/ball-movement';
 import { PlayerApiResponse } from '../../interfaces/player-api-response';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-pong-container',
   templateUrl: './pong-container.component.html',
   styleUrls: ['./pong-container.component.scss']
 })
-export class PongContainerComponent implements OnInit {
+export class PongContainerComponent implements OnInit, OnDestroy {
+
+  unsubscribe: Subject<boolean> = new Subject<boolean>();
+
+  unsubscribe$: Observable<boolean> = this.unsubscribe.asObservable();
+  messages$: Observable<string>;
+  playerMoved$: Observable<PlayerMovement>;
+  ballMovement$: Observable<BallMovement>;
+
   playerNumber: number;
   totalPlayers: number;
   isHost: boolean;
-  timer$: Observable<number>;
-  winner$: Observable<PlayerApiResponse>;
-  messages$: Observable<string>;
-  clear$: Observable<boolean>;
-  playerMoved$: Observable<PlayerMovement>;
-  ballMovement$: Observable<BallMovement>;
+  timer: number;
+  winner: boolean;
+  lost: boolean;
   playerList: PlayerApiResponse[];
-
   name = '';
   isGameStarted = false;
+  isGameEnded = false;
 
   constructor(private service: PongService) { }
 
   ngOnInit(): void {
     this.service.setupSocketConnection();
-    this.service.playerList$.subscribe((data: PlayerApiResponse[]) => {
+    this.initializeEvents();
+  }
+
+  initializeEvents(): void {
+    this.service.playerList$.pipe(takeUntil(this.unsubscribe$)).subscribe((data: PlayerApiResponse[]) => {
       this.playerList = data;
       this.totalPlayers = this.playerList.length;
       this.playerNumber = data.map(val => val.name).indexOf(this.name) + 1;
       this.isHost = this.playerNumber === 1;
     });
-    this.timer$ = this.service.timer$;
-    this.playerMoved$ = this.service.playerMoved$;
+    this.service.winner$.pipe(takeUntil(this.unsubscribe$)).subscribe(won => {
+      this.winner = won;
+      this.isGameEnded = true;
+    });
+    this.service.timer$.pipe(takeUntil(this.unsubscribe$)).subscribe(timer => this.timer = timer);
+    this.service.lost$.pipe(takeUntil(this.unsubscribe$)).subscribe(lost => {
+      this.lost = lost;
+      this.isGameEnded = true;
+    });
+    this.service.clear$.pipe(takeUntil(this.unsubscribe$)).subscribe(clear => {
+      this.tryAgain();
+    });
+
     this.playerMoved$ = this.service.playerMoved$;
     this.ballMovement$ = this.service.ballMovement$;
-    this.winner$ = this.service.winner$;
     this.messages$ = this.service.message$;
-    this.service.clear$.subscribe(clear => {
-      this.isGameStarted = false;
-    });
   }
 
   join(): void {
@@ -55,7 +72,10 @@ export class PongContainerComponent implements OnInit {
 
   tryAgain(): void {
     this.isGameStarted = false;
-    this.service.reset();
+    this.isGameEnded = false;
+    this.winner = false;
+    this.lost = false;
+    this.name = '';
   }
 
   onPlayerMove($event: PlayerMovement): void {
@@ -68,6 +88,10 @@ export class PongContainerComponent implements OnInit {
 
   onSetScore($event: number[]): void {
     this.service.onSetScore($event);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.next(true);
   }
 
 }

@@ -14,15 +14,48 @@ const PORT = 3000;
 server.listen(PORT, () => console.log(`Server running on ${PORT}`))
 
 const clientsLimit = 4;
-const scoreLimit = 3;
-const TIMER = 20;
+const scoreLimit = 2;
+const TIMER = 5;
 let playersList = [];
 let interval;
 let counter = TIMER;
 let isGameRunning = false;
 
 io.on('connection', (socket) => {
-    socket.on('join', (name) => {
+    socket.on('join', (name) => onJoin(name));
+
+    socket.on('onPlayerMove', movement => {
+        socket.broadcast.emit('playerMoved', movement);
+    });
+
+    socket.on('onBallMove', movement => {
+        socket.broadcast.emit('ballMoved', movement);
+    });
+
+    socket.on('setScore', scores => onSetStore(scores));
+
+    socket.on('reset', _ => {
+        counter = TIMER;
+    });
+
+    socket.on('disconnect', () => {
+        for (let i = 0, len = playersList.length; i < len; ++i) {
+            let player = playersList[i];
+            if (player.socket === socket.id) {
+                playersList.splice(i, 1);
+                io.emit('playerList', playersList);
+                if (playersList.length === 1) {
+                    isGameRunning = false;
+                    clearInterval(interval);
+                    io.to(playersList[0].socket).emit('winner', true);
+                    counter = TIMER;
+                }
+                break;
+            }
+        }
+    });
+
+    function onJoin(name) {
         if (!isGameRunning) {
             let player = {};
             player.socket = socket.id;
@@ -37,12 +70,21 @@ io.on('connection', (socket) => {
 
                 if (!interval) {
                     interval = setInterval(() => {
-                        console.log(counter);
                         io.emit('timer', counter);
                         if (counter > 0) {
                             counter--;
                         } else if (counter === 0) {
-                            isGameRunning = true;
+                            if (playersList.length >= 2) {
+                                isGameRunning = true;
+                                clearInterval(interval);
+                                counter = TIMER;
+                                interval = undefined;
+                            } else {
+                                clearInterval(interval);
+                                counter = TIMER;
+                                interval = undefined;
+                                playersList = [];
+                            }
                         } else {
                             clearInterval(interval);
                             counter = TIMER;
@@ -51,27 +93,20 @@ io.on('connection', (socket) => {
                     }, 1000)
                 }
             } else {
-                socket.emit('message', '4 players already playing. Please wait.');
+                socket.emit('message', '4 players are already playing. Please wait.');
                 socket.emit('clear', true);
             }
         } else {
             socket.emit('message', 'Game is already going on. Please wait.');
+            socket.emit('clear', true);
         }
 
-    });
+    }
 
-    socket.on('onPlayerMove', movement => {
-        socket.broadcast.emit('playerMoved', movement);
-    });
-
-    socket.on('onBallMove', movement => {
-        socket.broadcast.emit('ballMoved', movement);
-    });
-
-    socket.on('setScore', scores => {
+    function onSetStore(scores) {
         playersList.forEach((val, i) => {
             val.score = scores[i];
-            if (val.score >= 3) {
+            if (val.score >= scoreLimit) {
                 io.emit('message', `${playersList[i].name} Lost`);
                 io.to(playersList[i].socket).emit('lost', true);
                 playersList.splice(i, 1);
@@ -79,37 +114,17 @@ io.on('connection', (socket) => {
         });
 
         if (playersList.length === 1) {
-            io.emit('winner', playersList[0]);
-            io.emit('message', `${playersList[0]} is the winner`);
-            socket.disconnect();
+            io.to(playersList[0].socket).emit('winner', true);
+            isGameRunning = false;
+            io.emit('message', `${playersList[0].name} is the winner`);
             playersList = [];
+            clearInterval(interval);
             interval = null;
             counter = TIMER;
             io.emit('playerList', playersList);
         }
 
         io.emit('playerList', playersList);
-    });
+    }
 
-    socket.on('reset', _ => {
-        counter = TIMER;
-    });
-
-    socket.on('disconnect', () => {
-        let len = 0;
-
-        for (let i = 0, len = playersList.length; i < len; ++i) {
-            let player = playersList[i];
-
-            if (player.socket === socket.id) {
-                playersList.splice(i, 1);
-                io.emit('playerList', playersList);
-                if (playersList.length === 1) {
-                    interval = null;
-                    counter = TIMER;
-                }
-                break;
-            }
-        }
-    });
 });

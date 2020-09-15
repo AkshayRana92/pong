@@ -62,6 +62,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
   activePlayer: Position;
 
   ngOnChanges(changes: SimpleChanges): void {
+    // Set active player, determines which side the user will play from
     if (changes && changes['playerNumber']) {
       this.activePlayer = changes['playerNumber'].currentValue;
       this.context = this.canvas.nativeElement.getContext('2d');
@@ -70,6 +71,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
       this.createBall();
     }
 
+    // If not host, ball will be moved based on the events triggered by the host
     if (changes && changes['ballMovement']) {
       if (changes['ballMovement'].currentValue) {
         if (!this.isHost) {
@@ -82,6 +84,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
       }
     }
 
+    // This listens to the movement of opponents and moves them in the current screen
     if (changes && changes['moveOpponents']) {
       if (changes['moveOpponents'].currentValue) {
         switch (changes['moveOpponents'].currentValue.position) {
@@ -105,9 +108,15 @@ export class PongCanvasComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
+    // init game and mouse event
     this.playGame();
+    this.handlePlayerMovement();
+  }
+
+  handlePlayerMovement(): void {
     fromEvent(this.canvas.nativeElement, 'mousemove').subscribe((event: MouseEvent) => {
       const rect = this.canvas.nativeElement.getBoundingClientRect();
+      // move only active player
       switch (this.activePlayer) {
         case Position.LEFT:
           this.players.leftPlayer.rectangle.y = event.clientY - rect.top - 50;
@@ -129,10 +138,12 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     });
   }
 
+  // create canvas
   createCanvasBase(): void {
     drawRect(this.context, { x: 0, y: 0, height: 600, width: 600, color: 'black' });
   }
 
+  // create players and walls
   createPlayers(): void {
     this.players = {
       leftPlayer: getLeftPlayer(Position.LEFT === this.activePlayer, this.canvasHeight),
@@ -145,10 +156,12 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     };
   }
 
+  // create ball
   createBall(): void {
     this.ball = getBall(this.canvasWidth, this.canvasHeight);
   }
 
+  // Render all of the above created figures
   render(): void {
     this.createCanvasBase();
     drawRect(this.context, this.players.leftPlayer.rectangle);
@@ -158,18 +171,21 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     drawCircle(this.context, this.ball.circle);
   }
 
+  // start game
   playGame(): void {
     setInterval(() => {
       this.game();
     }, 1000 / this.fps);
   }
 
+  // updates on every frame per second, and render the update
   game(): void {
     this.update();
     this.render();
   }
 
 
+  // update scores, move ball and handle ball bounces
   update(): void {
     this.updateScore();
     this.moveBall();
@@ -179,6 +195,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  // Only host updates score
   updateScore(): void {
     if (this.isHost) {
       if (this.ball.circle.x - this.ball.circle.radius < 0) {
@@ -207,6 +224,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  // moves ball based on velocity
   moveBall(): void {
     this.ball.circle.x += this.ball.velocityX;
     this.ball.circle.y += this.ball.velocityY;
@@ -226,6 +244,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  // handle bounces when ball collides with players
   handleBallBouncing(): void {
     if (didBallHitLeftPlayer(this.ball, this.players.leftPlayer, this.offset) ||
       didBallHitRightPlayer(this.ball, this.players.rightPlayer, this.offset)) {
@@ -265,6 +284,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  // reset ball to middle after a point
   resetBall(position: Position): void {
     if (this.isHost) {
       this.ball.circle.x = this.canvasWidth / 2;
@@ -285,6 +305,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     }
   }
 
+  // Change ball velocity on hit
   setBallVelocityWhenBallHitsPaddleLeftOrRight(): void {
     const player = (this.ball.circle.x + this.ball.circle.radius < this.canvasWidth / 2) ?
       this.players.leftPlayer : this.players.rightPlayer;
@@ -296,6 +317,7 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     this.ball.velocityY = this.ball.speed * Math.sin(angle);
   }
 
+  // Change ball velocity on hit
   setBallVelocityWhenBallHitsPaddleTopOrBottom(): void {
     const player = (this.ball.circle.y + this.ball.circle.radius < this.canvasHeight / 2) ?
       this.players.topPlayer : this.players.bottomPlayer;

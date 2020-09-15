@@ -1,42 +1,58 @@
 <div class="container">
   <div class="game">
+
     <mat-card>
       <mat-card-header>
-        Pong Game
+        <h1>Pong Game</h1>
       </mat-card-header>
       <mat-card-content>
 
-        <div *ngIf="isGameStarted; else enterDetails">
-          <div *ngIf="(timer$ | async) && (timer$ | async) > 0; else timerEnded">
-            Waiting for other players. Game will start in {{timer$ | async}}s
-          </div>
 
-          <ng-template #timerEnded>
-            <ng-container *ngIf="totalPlayers >= 2 && (timer$ | async) === 0; else insufficientPlayers">
-              <app-pong-canvas
-                [playerNumber]="playerNumber"
-                [totalPlayers]="totalPlayers"
-                [isHost]="isHost"
-                [ballMovement]="ballMovement$ | async"
-                [moveOpponents]="playerMoved$ | async"
-                (playerMove)="onPlayerMove($event)"
-                (ballMove)="onBallMove($event)"
-                (scores)="onSetScore($event)"
-              ></app-pong-canvas>
-            </ng-container>
-            <ng-template #insufficientPlayers>
-              <div *ngIf="(timer$ | async) === 0">
-                Insufficient Players. Please Try Again.
-                <button (click)="tryAgain()">Try Again</button>
-              </div>
-            </ng-template>
-          </ng-template>
+        <div *ngIf="isGameEnded; else goAgain">
+          <h2 *ngIf="winner">
+            CONGRATULATION! YOU WON
+          </h2>
+          <h2 *ngIf="lost">
+            You lost
+          </h2>
+
+          <button (click)="tryAgain()">Try Again</button>
         </div>
 
+        <ng-template #goAgain>
+          <div *ngIf="isGameStarted && timer!==null ; else enterDetails">
+            <div *ngIf="timer > 0; else timerEnded">
+              Waiting for other players. Game will start in {{timer}}s
+            </div>
+            <ng-template #timerEnded>
+              <ng-container *ngIf="totalPlayers >= 2 && timer === 0; else insufficientPlayers">
+                <app-pong-canvas
+                  [playerNumber]="playerNumber"
+                  [totalPlayers]="totalPlayers"
+                  [isHost]="isHost"
+                  [ballMovement]="ballMovement$ | async"
+                  [moveOpponents]="playerMoved$ | async"
+                  (playerMove)="onPlayerMove($event)"
+                  (ballMove)="onBallMove($event)"
+                  (scores)="onSetScore($event)"
+                ></app-pong-canvas>
+              </ng-container>
+              <ng-template #insufficientPlayers>
+                <div *ngIf="timer === 0">
+                  Insufficient Players. Please Try Again.
+                  <button (click)="tryAgain()">Try Again</button>
+                </div>
+              </ng-template>
+            </ng-template>
+          </div>
+        </ng-template>
+
         <ng-template #enterDetails>
-          <label>Name: </label>
-          <input type="text" placeholder="Enter Name" [(ngModel)]="name"/>
-          <button (click)="join()">JOIN GAME</button>
+          <mat-form-field class="field-full-width h">
+            <mat-label>Enter Name</mat-label>
+            <input matInput placeholder="Name" [(ngModel)]="name">
+          </mat-form-field>
+          <button class="play-button" color="primary" mat-raised-button (click)="join()">Play</button>
         </ng-template>
 
       </mat-card-content>

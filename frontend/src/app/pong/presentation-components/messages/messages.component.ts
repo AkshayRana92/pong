@@ -17,8 +17,8 @@ export class MessagesComponent implements OnChanges {
       if (changes['message'].currentValue) {
         if (this.messages.length > 10) {
           this.messages.shift();
-          this.messages.push(changes['message'].currentValue);
         }
+        this.messages.push(changes['message'].currentValue);
       }
     }
   }

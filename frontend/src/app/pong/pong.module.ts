@@ -6,6 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { MessagesComponent } from './presentation-components/messages/messages.component';
 import { MessageItemComponent } from './presentation-components/message-item/message-item.component';
 import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
 
 
 @NgModule({
@@ -13,7 +16,10 @@ import { MatCardModule } from '@angular/material/card';
   imports: [
     CommonModule,
     FormsModule,
-    MatCardModule
+    MatCardModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatButtonModule
   ],
   exports: [PongCanvasComponent, PongContainerComponent]
 })
