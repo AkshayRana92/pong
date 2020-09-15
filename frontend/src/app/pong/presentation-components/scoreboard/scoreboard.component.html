@@ -1,0 +1,6 @@
+<ul>
+  <li *ngFor="let player of players">
+    {{player.name}}&nbsp;&nbsp;
+    <span *ngFor="let n of getArray(SCORE_LIMIT - player.score)"><mat-icon>favorite</mat-icon></span>
+  </li>
+</ul>

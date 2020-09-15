@@ -9,16 +9,19 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { ScoreboardComponent } from './presentation-components/scoreboard/scoreboard.component';
 
 
 @NgModule({
-  declarations: [PongCanvasComponent, PongContainerComponent, MessagesComponent, MessageItemComponent],
+  declarations: [PongCanvasComponent, PongContainerComponent, MessagesComponent, MessageItemComponent, ScoreboardComponent],
   imports: [
     CommonModule,
     FormsModule,
     MatCardModule,
     MatInputModule,
     MatFormFieldModule,
+    MatIconModule,
     MatButtonModule
   ],
   exports: [PongCanvasComponent, PongContainerComponent]

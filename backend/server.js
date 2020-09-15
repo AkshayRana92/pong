@@ -11,11 +11,11 @@ const io = socketIo.listen(server);
 
 const PORT = 3000;
 
-server.listen(PORT, () => console.log(`Server running on ${PORT}`))
+server.listen(PORT, () => console.log(`Server running on ${PORT}`));
 
 const clientsLimit = 4;
-const scoreLimit = 2;
-const TIMER = 5;
+const scoreLimit = 3;
+const TIMER = 15;
 let playersList = [];
 let interval;
 let counter = TIMER;
@@ -42,6 +42,7 @@ io.on('connection', (socket) => {
         for (let i = 0, len = playersList.length; i < len; ++i) {
             let player = playersList[i];
             if (player.socket === socket.id) {
+                io.emit('message', `${playersList[i].name} disconnected`);
                 playersList.splice(i, 1);
                 io.emit('playerList', playersList);
                 if (playersList.length === 1) {

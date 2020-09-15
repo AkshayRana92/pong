@@ -86,7 +86,7 @@ export function getBottomPlayer(
   };
 }
 
-export function getBottomWall(
+export function getTopWall(
   canvasWidth: number): Player {
   return {
     rectangle: {
@@ -102,7 +102,7 @@ export function getBottomWall(
   };
 }
 
-export function getTopWall(
+export function getBottomWall(
   canvasWidth: number, canvasHeight: number): Player {
   return {
     rectangle: {

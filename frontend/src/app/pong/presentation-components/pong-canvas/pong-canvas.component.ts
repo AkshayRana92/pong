@@ -65,6 +65,11 @@ export class PongCanvasComponent implements OnInit, OnChanges {
     // Set active player, determines which side the user will play from
     if (changes && changes['playerNumber']) {
       this.activePlayer = changes['playerNumber'].currentValue;
+    }
+    if (changes && changes['totalPlayers']) {
+      this.totalPlayers = changes['totalPlayers'].currentValue;
+    }
+    if (changes && changes['playerNumber'] || changes && changes['totalPlayers']) {
       this.context = this.canvas.nativeElement.getContext('2d');
       this.createCanvasBase();
       this.createPlayers();
@@ -150,10 +155,11 @@ export class PongCanvasComponent implements OnInit, OnChanges {
       rightPlayer: getRightPlayer(Position.RIGHT === this.activePlayer, this.canvasWidth, this.canvasHeight),
       bottomPlayer: this.totalPlayers > 2 ?
         getBottomPlayer(Position.BOTTOM === this.activePlayer, this.canvasWidth, this.canvasHeight) :
-        getBottomWall(this.canvasWidth),
+        getBottomWall(this.canvasWidth, this.canvasHeight),
       topPlayer: this.totalPlayers > 3 ? getTopPlayer(Position.TOP === this.activePlayer, this.canvasWidth) :
-        getTopWall(this.canvasWidth, this.canvasHeight)
+        getTopWall(this.canvasWidth)
     };
+    console.log(this.players);
   }
 
   // create ball
@@ -205,14 +211,14 @@ export class PongCanvasComponent implements OnInit, OnChanges {
         this.players.rightPlayer.score++;
         this.resetBall(Position.RIGHT);
       } else if (this.ball.circle.y - this.ball.circle.radius < 0) {
-        if (!this.players.bottomPlayer.isWall) {
-          this.players.bottomPlayer.score++;
-          this.resetBall(Position.BOTTOM);
-        }
-      } else if (this.ball.circle.y + this.ball.circle.radius > this.canvasHeight) {
         if (!this.players.topPlayer.isWall) {
           this.players.topPlayer.score++;
           this.resetBall(Position.TOP);
+        }
+      } else if (this.ball.circle.y + this.ball.circle.radius > this.canvasHeight) {
+        if (!this.players.bottomPlayer.isWall) {
+          this.players.bottomPlayer.score++;
+          this.resetBall(Position.BOTTOM);
         }
       }
       this.scores.emit([

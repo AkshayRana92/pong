@@ -26,6 +26,7 @@
             </div>
             <ng-template #timerEnded>
               <ng-container *ngIf="totalPlayers >= 2 && timer === 0; else insufficientPlayers">
+                <app-scoreboard [players]="playerList"></app-scoreboard>
                 <app-pong-canvas
                   [playerNumber]="playerNumber"
                   [totalPlayers]="totalPlayers"
