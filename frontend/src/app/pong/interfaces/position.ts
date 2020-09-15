@@ -1,6 +1,6 @@
 export enum Position {
-  TOP = 'TOP',
-  BOTTOM = 'BOTTOM',
-  LEFT = 'LEFT',
-  RIGHT = 'RIGHT',
+  LEFT = 1,
+  RIGHT = 2,
+  BOTTOM = 3,
+  TOP = 4
 }

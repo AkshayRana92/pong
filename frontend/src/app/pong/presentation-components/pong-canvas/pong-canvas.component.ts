@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {drawCircle, drawRect} from '../../utils/canvas.utils';
 import {PongService} from '../../services/pong.service';
 import {Player} from '../../interfaces/player';
@@ -22,8 +22,9 @@ import {fromEvent} from 'rxjs';
   templateUrl: './pong-canvas.component.html',
   styleUrls: ['./pong-canvas.component.scss']
 })
-export class PongCanvasComponent implements OnInit {
+export class PongCanvasComponent implements OnInit, OnChanges {
 
+  @Input() playerNumber: number;
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement>;
   canvasHeight = 600;
@@ -38,22 +39,37 @@ export class PongCanvasComponent implements OnInit {
   ball: Ball;
   fps = 20;
   offset = 5;
+  activePlayer: Position;
 
-  constructor(private service: PongService) { }
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes && changes['playerNumber']) {
+      this.activePlayer = changes['playerNumber'].currentValue;
+      this.context = this.canvas.nativeElement.getContext('2d');
+      this.createCanvasBase();
+      this.createPlayers();
+      this.createBall();
+    }
+  }
 
   ngOnInit(): void {
-    this.context = this.canvas.nativeElement.getContext('2d');
-    this.createCanvasBase();
-    this.createPlayers();
-    this.createBall();
     this.playGame();
 
     fromEvent(this.canvas.nativeElement, 'mousemove').subscribe(event => {
       const rect = this.canvas.nativeElement.getBoundingClientRect();
-      this.players.leftPlayer.rectangle.y = event['clientY'] - rect.top - 50;
-      this.players.rightPlayer.rectangle.y = event['clientY'] - rect.top - 50;
-      this.players.bottomPlayer.rectangle.x = event['clientX'] - rect.left - 50;
-      this.players.topPlayer.rectangle.x = event['clientX'] - rect.left - 50;
+      switch (this.activePlayer) {
+        case Position.LEFT:
+          this.players.leftPlayer.rectangle.y = event['clientY'] - rect.top - 50;
+          break;
+        case Position.RIGHT:
+          this.players.rightPlayer.rectangle.y = event['clientY'] - rect.top - 50;
+          break;
+        case Position.TOP:
+          this.players.topPlayer.rectangle.x = event['clientX'] - rect.left - 50;
+          break;
+        case Position.BOTTOM:
+          this.players.bottomPlayer.rectangle.x = event['clientX'] - rect.left - 50;
+          break;
+      }
     })
   }
 
@@ -63,10 +79,10 @@ export class PongCanvasComponent implements OnInit {
 
   createPlayers() {
     this.players = {
-      leftPlayer: getLeftPlayer(this.canvasHeight),
-      rightPlayer: getRightPlayer(this.canvasWidth, this.canvasHeight),
-      bottomPlayer: getBottomPlayer(this.canvasWidth, this.canvasHeight),
-      topPlayer: getTopPlayer(this.canvasWidth)
+      leftPlayer: getLeftPlayer(Position.LEFT === this.activePlayer, this.canvasHeight),
+      rightPlayer: getRightPlayer(Position.RIGHT === this.activePlayer,this.canvasWidth, this.canvasHeight),
+      bottomPlayer: getBottomPlayer(Position.BOTTOM === this.activePlayer,this.canvasWidth, this.canvasHeight),
+      topPlayer: getTopPlayer(Position.TOP === this.activePlayer,this.canvasWidth)
     }
   }
 

@@ -4,6 +4,7 @@ import {Circle} from '../interfaces/circle';
 import {Ball, BallPositions} from '../interfaces/ball';
 
 export function getLeftPlayer(
+  isActivePlayer: boolean,
   canvasHeight: number,
   paddleHeight: number = 100,
   paddleWidth: number = 10,
@@ -15,7 +16,7 @@ export function getLeftPlayer(
       y: canvasHeight/2 - paddleHeight/2,
       width: paddleWidth,
       height: paddleHeight,
-      color: 'white'
+      color: isActivePlayer ? '#42f598' : '#ff6e42'
     },
     isWall: false,
     score: 0,
@@ -24,6 +25,7 @@ export function getLeftPlayer(
 }
 
 export function getRightPlayer(
+  isActivePlayer: boolean,
   canvasWidth: number,
   canvasHeight: number,
   paddleHeight: number = 100,
@@ -35,7 +37,7 @@ export function getRightPlayer(
       y: canvasHeight/2 - paddleHeight/2,
       width: paddleWidth,
       height: paddleHeight,
-      color: 'white'
+      color: isActivePlayer ? '#42f598' : '#ff6e42'
     },
     isWall: false,
     score: 0,
@@ -44,6 +46,7 @@ export function getRightPlayer(
 }
 
 export function getTopPlayer(
+  isActivePlayer: boolean,
   canvasWidth: number,
   paddleHeight: number = 10,
   paddleWidth: number = 100,
@@ -54,7 +57,7 @@ export function getTopPlayer(
       y: offset,
       width: paddleWidth,
       height: paddleHeight,
-      color: 'white'
+      color: isActivePlayer ? '#42f598' : '#ff6e42'
     },
     isWall: false,
     score: 0,
@@ -63,6 +66,7 @@ export function getTopPlayer(
 }
 
 export function getBottomPlayer(
+  isActivePlayer: boolean,
   canvasWidth: number,
   canvasHeight: number,
   paddleHeight: number = 10,
@@ -74,7 +78,7 @@ export function getBottomPlayer(
       y: canvasHeight - paddleHeight - offset,
       width: paddleWidth,
       height: paddleHeight,
-      color: 'white'
+      color: isActivePlayer ? '#42f598' : '#ff6e42'
     },
     isWall: false,
     score: 0,
